@@ -1,6 +1,6 @@
-#Tiny REST API
+# Tiny REST API
 
-## Example of use.
+## Examplo de use.
 
 Imagina que estás desarrollando un frontend para una tienda de libros. Ya tienes los formularios y páginas listos, pero aún no tienes la base de datos del cliente.
 
@@ -11,9 +11,9 @@ Una opción sería encontrar un JSON de ejemplo o una base de datos online y mon
 - Los nombres de los campos pueden no coincidir con los de tu proyecto.
 - Tendrás que modificar tu código o la estructura de datos (lo que genera más trabajo y posibles errores futuros).
 
-`Tiny REST API`  soluciona esto al proporcionar un JSON flexible que se adapta automáticamente a tu proyecto sin necesidad de modificar el código.
+`Tiny REST API` soluciona esto al proporcionar un JSON flexible que se adapta automáticamente a tu proyecto sin necesidad de modificar el código.
 
-## Configuration in `config.ini`
+## Configuración en `config.ini`
 
 ### 1. Crear un "servidor virtual"
 
@@ -24,7 +24,8 @@ Por ejemplo, si queremos configurar un servidor para una librería llamada ACME,
 ```ini
 [Book Shop ACME]
 ```
-*(puedes usar cualquier nombre para la sección)*
+
+_(puedes usar cualquier nombre para la sección)_
 
 ### 2. Definir las rutas de la API
 
@@ -33,9 +34,11 @@ Si nuestra aplicación hace peticiones a `/books`, pero también queremos soport
 ```ini
 paths=books,libros
 ```
-Esto significa que `/books` y  `/libros` devolverán los mismos datos, permitiendo alias para las rutas.
+
+Esto significa que `/books` y `/libros` devolverán los mismos datos, permitiendo alias para las rutas.
 
 ### 3. Indicar los métodos HTTP permitidos
+
 Podemos especificar qué métodos están habilitados para este endpoint. En este caso, activamos todos:
 
 ```ini
@@ -51,7 +54,8 @@ Si intentamos modificar o eliminar un registro cuando `readonly=true`, el servid
 ```ini
 readonly=false
 ```
-*(Por defecto, readonly=false, lo que significa que las modificaciones están permitidas.)*
+
+_(Por defecto, readonly=false, lo que significa que las modificaciones están permitidas.)_
 
 ### 5. Asignar alias a los campos del JSON
 
@@ -62,13 +66,17 @@ El JSON de prueba tiene un campo llamado `text60`, pero en nuestro frontend lo l
 ```ini
 field aliases=title,test60|telephone,phone
 ```
-*(Tienes una relación de los campos del JSON en el README.md)*
+
+_(Tienes una relación de los campos del JSON en el README.md)_
+
 - **Cuando la API devuelva datos, los nombres de los campos se transformarán automáticamente.**
 
 - **Cuando envíes datos en una petición, también se convertirán a los nombres internos.**
-  
+
 #### Ejemplo:
+
 JSON original almacenado en memoria
+
 ```json
 {
   "text60": "The Go Programming Language and the Gin Gonic with Ice",
@@ -84,14 +92,17 @@ Respues de la API tras aplicar los alias:
   "telephone": "25123456789"
 }
 ```
+
 Esto evita que tengas que modificar tu código para adaptarlo al backend.
 
 ## ¿Listo? ¡Ejecuta Tiny REST API!
+
 Una vez configurado config.ini, simplemente ejecuta el servidor.
+
 ```bash
 ./tinyrestapi
 ```
 
 Ahora puedes hacer peticiones a tu API sin preocuparte por nombres de campos incorrectos o por modificar accidentalmente el JSON original.
 
-***Todas las modificaciones se hacen en RAM, el archivo original en disco no se altera.***
+**_Todas las modificaciones se hacen en RAM, el archivo original en disco no se altera._**
