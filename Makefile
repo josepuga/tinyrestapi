@@ -1,8 +1,7 @@
 # José Puga 2025. GPL3 License
 #
 BINARY_PATH=./app/tinyrestapi
-#VERSION=$(shell git describe --tags --always --dirty)
-VERSION=1.1.1
+VERSION=$(shell git describe --tags --always)
 FLAGS="-w -s -X 'main.version=$(VERSION)'"
 
 build:
