@@ -1,6 +1,6 @@
 # Tiny REST API
 
-## Examplo de use.
+## Examplo de uso.
 
 Imagina que estás desarrollando un frontend para una tienda de libros. Ya tienes los formularios y páginas listos, pero aún no tienes la base de datos del cliente.
 
