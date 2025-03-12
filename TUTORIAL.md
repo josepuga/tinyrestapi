@@ -51,8 +51,6 @@ We can define which HTTP methods are enabled for this endpoint. In this case, we
 methods=GET,POST,PUT,PATCH,DELETE,HEAD
 ```
 
-_(If this option is not defined, Tiny REST API will assume `GET` as the default method.)_
-
 ---
 
 ### **4️. Enabling or disabling data modifications**
