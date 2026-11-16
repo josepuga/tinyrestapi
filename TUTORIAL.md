@@ -1,93 +1,159 @@
-# **Tiny REST API**
+# Tiny REST API
 
-## **Example of use**
+## Example of use
 
-Imagine you are developing a frontend for a bookshop. You have already set up your forms and pages, but you **don't have the client's database yet**.
+Imagine you are developing a frontend for a bookshop. You already have the forms and pages ready, but the client's database or backend API is not available yet.
 
-The backend team might not have finished the API, the server might be down, or you simply need a **quick testing solution**.
+The backend team might still be implementing the service, the server might temporarily be unavailable, or you might simply need a quick and predictable environment for testing.
 
-One option would be to find a **sample JSON** or an **online database** and set up a temporary backend. However, this comes with several issues:
+One option would be to find a sample JSON file or an online database and build a temporary backend around it. However, this creates several problems:
 
-- **The field names might not match your project’s structure.**
-- **You would have to modify your code or the data structure** (which adds extra work and potential future errors).
+- The field names may not match your project's data contract.
+- The routes may not match the URLs expected by your client.
+- You may have to modify application code just to accommodate temporary test data.
+- A temporary backend introduces additional work that will later be discarded.
 
-**Tiny REST API solves this problem by providing a flexible JSON that automatically adapts to your project** without needing code modifications.
+Tiny REST API lets you expose a test JSON dataset through a configurable REST API and adapt its routes and field names to the client application.
+
+This allows the frontend or client application to continue development without depending on the final backend.
 
 ---
 
-## **🛠 Configuration in `config.ini`**
+## Configuration in `config.ini`
 
-### **1️. Creating a "virtual server"**
+### 1. Creating a "virtual server"
 
-Tiny REST API allows you to define **multiple configurations**. In `config.ini`, each section represents a different data environment.
+Tiny REST API allows multiple handler configurations. Each section in `config.ini` represents a different data environment or endpoint configuration.
 
-For example, if we want to configure a server for a bookstore called **ACME**, we add a section:
+For example, to configure a bookshop called ACME:
 
 ```ini
 [Book Shop ACME]
 ```
 
-_(You can use any name for the section.)_
+You can use any name for the section.
 
 ---
 
-### **2️. Defining API routes**
+### 2. Defining API routes
 
-If our application makes requests to `/books`, but we also want to support `/libros` for Spanish-speaking users, we can define both routes:
+If the application makes requests to `/books`, but we also want to expose the same resource as `/libros`, we can configure both routes:
 
 ```ini
 paths=books,libros
 ```
 
-This means that **both `/books` and `/libros` will return the same data**, allowing **route aliases**.
+Both `/books` and `/libros` expose the same data.
+
+Route aliases are not limited to languages. They can also be useful for legacy URLs, different client conventions, or transitional API paths.
 
 ---
 
-### **3️. Specifying allowed HTTP methods**
+### 3. Specifying allowed HTTP methods
 
-We can define which HTTP methods are enabled for this endpoint. In this case, we allow **all methods**:
+We can define which HTTP methods are enabled for this handler.
+
+For example:
 
 ```ini
 methods=GET,POST,PUT,PATCH,DELETE,HEAD
 ```
 
+Only the configured methods are exposed.
+
 ---
 
-### **4️. Enabling or disabling data modifications**
+### 4. Read-only mode
 
-If we want to keep the data **read-only** and prevent accidental modifications, we can enable `readonly` mode:
+If we want the endpoint to behave as read-only, we can enable:
+
+```ini
+readonly=true
+```
+
+When `readonly=true`, write methods such as `POST`, `PUT`, `PATCH`, and `DELETE` are rejected with:
+
+```text
+405 Method Not Allowed
+```
+
+This can be useful for permission testing or for endpoints that should not accept modifications.
+
+By default:
 
 ```ini
 readonly=false
 ```
 
-**If we try to modify or delete a record while `readonly=true`, the server will return an access error.**  
-_(By default, `readonly=false`, meaning modifications are allowed.)_
+---
 
-This is useful for **permission testing** and **ensuring data integrity**.
+### 5. Simulation mode
+
+Sometimes we want the client to exercise write operations without changing the test dataset.
+
+For this case:
+
+```ini
+simulation=true
+```
+
+In simulation mode, write requests are accepted and return their normal success status, but no changes are applied to the in-memory dataset.
+
+For example:
+
+```text
+DELETE /books/32
+```
+
+can return a successful response while book `32` is still present in later `GET` requests.
+
+The difference between the modes is:
+
+```text
+readonly=true
+    write operations are rejected
+
+simulation=true
+    write operations are accepted
+    data remains unchanged
+
+normal mode
+    write operations modify the in-memory dataset
+```
+
+#### Why simulation mode is not a dry run
+
+Simulation mode is intentionally simpler than a traditional dry run.
+
+A true dry run would require processing the complete mutation while ensuring that its result is not committed. Depending on the implementation, this could require cloning or temporarily duplicating part or all of the JSON dataset.
+
+Tiny REST API cannot know in advance how large the user's JSON file will be or how much memory is available on the machine where it runs. Duplicating a large dataset only to simulate an operation could create unnecessary memory usage, performance degradation, or allocation failures.
+
+Simulation mode therefore accepts the request and returns the corresponding success status without modifying the dataset.
+
+If real state changes are required during testing, the user can simply run Tiny REST API with a disposable copy of the JSON file.
 
 ---
 
-### **5️. Assigning aliases to JSON fields**
+### 6. Assigning aliases to JSON fields
 
-Now comes the **most important feature**: **adapting the JSON fields to match your app’s structure**.
+One of Tiny REST API's main features is the ability to adapt JSON fields to the names expected by the client application.
 
-For example, in our **test JSON**, the field `text60` might be **used as a book title** (`title`) in our frontend, and `phone` might be used as `telephone`. We can automatically apply these aliases:
+For example, the test JSON contains a field named `text60`, but the frontend expects a field named `title`. It also contains `phone`, while the client expects `telephone`.
+
+We can define aliases:
 
 ```ini
 field aliases=title,text60|telephone,phone
 ```
 
-_(You can find the full list of JSON fields in the `README.md`.)_
+When the API returns data, field names are transformed to the aliases expected by the client.
 
-**How does it work?**
+When the client sends data, aliases are converted back to the internal JSON field names.
 
-- **When the API returns data, it automatically transforms the field names to match your project.**
-- **When you send data in a request, it is automatically converted to the original internal names.**
+#### Example
 
-#### **Example**
-
-**Original JSON stored in memory**
+Original JSON stored in memory:
 
 ```json
 {
@@ -96,7 +162,7 @@ _(You can find the full list of JSON fields in the `README.md`.)_
 }
 ```
 
-**API response after applying the aliases**
+API response after applying aliases:
 
 ```json
 {
@@ -105,18 +171,48 @@ _(You can find the full list of JSON fields in the `README.md`.)_
 }
 ```
 
-This **eliminates the need to modify your code** to match the backend's field names.
+This allows the client application to work with its own data contract without modifying the original dataset.
+
+You can find the full list of fields included in the sample JSON in the `README.md`.
 
 ---
 
-## **Ready? Run Tiny REST API!**
+## Running Tiny REST API
 
-Once `config.ini` is configured, simply start the server:
+Once `config.ini` is configured, start the server:
 
 ```bash
 ./tinyrestapi
 ```
 
-Now you can make requests to your API **without worrying about incorrect field names or accidentally modifying the original JSON**.
+You can also specify a different configuration file:
 
-**All modifications are done in RAM, so the original file on disk is never altered.**
+```bash
+./tinyrestapi -c ./myconfig.ini
+```
+
+or use the environment variable:
+
+```bash
+TINYRESTAPICONFIG=/path/to/config.ini ./tinyrestapi
+```
+
+The configuration file is resolved in this order:
+
+1. `-c` or `--config`
+2. `TINYRESTAPICONFIG`
+3. `./config.ini`
+
+Now the client application can make requests against the mock API without depending on the final backend.
+
+All normal modifications are performed in RAM. The original JSON file on disk is never modified.
+
+---
+
+## Project status
+
+Tiny REST API is fully functional.
+
+The project is currently receiving additional improvements and strengthening its test suite to consolidate a solid foundation before formal packaged releases are published.
+
+For the moment, the precompiled binary and configuration files are available under `app/`, or the project can be compiled directly from source.

@@ -18,6 +18,7 @@ type RoutesMap map[string][]string
 type Server struct {
 	Host     string
 	Port     int
+	Json     string
 	Handlers []*Handler
 	// To create something like that: "GET": {"/books", "/libros", "/llibres"},
 	Routes RoutesMap
@@ -89,7 +90,6 @@ func (s *Server) addPathsToFunction(rm RoutesMap) {
 }
 
 // Internal Handlers for all methods request
-//
 func (s *Server) handleGET(c *gin.Context) {
 	handler := s.getHandlerFromPath(c.FullPath())
 	// If not ID, returns all JSON fields
@@ -131,6 +131,12 @@ func (s *Server) handlePOST(c *gin.Context) {
 		return
 	}
 
+	// Simulation Mode (no errors)
+	if handler.SimulationMode {
+		c.JSON(http.StatusCreated, nil)
+		return
+	}
+
 	// Add new item and check error.
 	createdItem, err := handler.jsonData.AddItem(rawData)
 	if err != nil {
@@ -161,6 +167,12 @@ func (s *Server) handlePUT(c *gin.Context) {
 		return
 	}
 
+	// Simulation Mode (no errors)
+	if handler.SimulationMode {
+		c.JSON(http.StatusOK, nil)
+		return
+	}
+
 	// Modify the item and get error
 	updatedItem, err := handler.jsonData.UpdateItem(id, rawData)
 	if err != nil {
@@ -180,6 +192,12 @@ func (s *Server) handleDELETE(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	// Simulation Mode (no errors)
+	if handler.SimulationMode {
+		c.JSON(http.StatusOK, nil)
 		return
 	}
 
@@ -209,6 +227,12 @@ func (s *Server) handlePATCH(c *gin.Context) {
 	rawData, err := c.GetRawData()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Unable to read BODY"})
+		return
+	}
+
+	// Simulation Mode (no errors)
+	if handler.SimulationMode {
+		c.JSON(http.StatusOK, nil)
 		return
 	}
 

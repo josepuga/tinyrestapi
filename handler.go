@@ -3,15 +3,16 @@ package main
 // Handler is a "special" struct used by the Server
 
 type Handler struct {
-	Paths        []string          // All paths used for requests. ie: ["/books", "/libros", "/llibres"]
-	Methods      map[string]bool   // Methods. Only true are avail. ie: ["GET"]true
-	ReadOnlyMode bool              // To prevent call to a not allowed methods
-	jsonData     JSONData          // The JSONData struct than contains all data
+	Paths          []string        // All paths used for requests. ie: ["/books", "/libros", "/llibres"]
+	Methods        map[string]bool // Methods. Only true are avail. ie: ["GET"]true
+	ReadOnlyMode   bool            // To prevent call to a not allowed methods
+	SimulationMode bool            // Accept the operation without modifying data.
+	jsonData       JSONData        // The JSONData struct than contains all data
 }
 
 func NewHandler() *Handler {
 	result := &Handler{
-        jsonData: *NewJSONData(),
+		jsonData: *NewJSONData(),
 	}
 	// By default all methods are disabled.
 	result.Methods = map[string]bool{
@@ -20,7 +21,7 @@ func NewHandler() *Handler {
 		"PUT":    false,
 		"PATCH":  false,
 		"DELETE": false,
-        "HEAD": false,
+		"HEAD":   false,
 	}
 	return result
 }
@@ -37,5 +38,5 @@ func (h *Handler) AddPath(pathName string) {
 }
 
 func (h *Handler) AddAlias(alias, internal string) {
-    h.jsonData.AddAlias(alias, internal)
+	h.jsonData.AddAlias(alias, internal)
 }
